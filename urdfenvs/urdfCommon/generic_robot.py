@@ -87,12 +87,12 @@ class GenericRobot(ABC):
                         "position": gym.spaces.Box(
                         low=self._limitPos_j[0, :],
                         high=self._limitPos_j[1, :],
-                        dtype=np.float64,
+                        dtype=np.float32,
                     ),
                         "velocity": gym.spaces.Box(
                             low=self._limit_vel_j[0, :],
                             high=self._limit_vel_j[1, :],
-                            dtype=np.float64,
+                            dtype=np.float32,
                         ),
                     }
                 )
