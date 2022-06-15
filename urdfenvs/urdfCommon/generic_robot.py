@@ -104,7 +104,7 @@ class GenericRobot(ABC):
         ospace = self.get_observation_space()
         uu = self._limit_tor_j[1, :]
         ul = self._limit_tor_j[0, :]
-        aspace = gym.spaces.Box(low=ul, high=uu, dtype=np.float64)
+        aspace = gym.spaces.Box(low=ul, high=uu, dtype=np.float32)
         return (ospace, aspace)
 
     def get_velocity_spaces(self) -> tuple:
@@ -113,7 +113,7 @@ class GenericRobot(ABC):
         ospace = self.get_observation_space()
         uu = self._limit_vel_j[1, :]
         ul = self._limit_vel_j[0, :]
-        aspace = gym.spaces.Box(low=ul, high=uu, dtype=np.float64)
+        aspace = gym.spaces.Box(low=ul, high=uu, dtype=np.float32)
         return (ospace, aspace)
 
     def get_acceleration_spaces(self) -> tuple:
@@ -122,7 +122,7 @@ class GenericRobot(ABC):
         ospace = self.get_observation_space()
         uu = self._limit_acc_j[1, :]
         ul = self._limit_acc_j[0, :]
-        aspace = gym.spaces.Box(low=ul, high=uu, dtype=np.float64)
+        aspace = gym.spaces.Box(low=ul, high=uu, dtype=np.float32)
         return (ospace, aspace)
 
     def disable_velocity_control(self):
