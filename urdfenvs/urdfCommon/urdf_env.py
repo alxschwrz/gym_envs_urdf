@@ -1,13 +1,18 @@
+import collections
 import gym
 import time
 import numpy as np
 import pybullet as p
 import warnings
 from abc import abstractmethod
+from random import sample
 
 from urdfenvs.urdfCommon.plane import Plane
 from urdfenvs.sensors.sensor import Sensor
 from urdfenvs.urdfCommon.generic_robot import GenericRobot
+
+from urdfenvs.tasks.reach_sphere import ReachSphereTask
+from urdfenvs.tasks.reach_sphere_albert import AlbertReachSphereTask
 
 
 class WrongObservationError(Exception):
@@ -161,7 +166,8 @@ class UrdfEnv(gym.Env):
     """Generic urdf-environment for OpenAI-Gym"""
 
     def __init__(
-        self, robot: GenericRobot, flatten_observation: bool = False, render: bool = False, dt: float = 0.01
+            self, robot: GenericRobot, flatten_observation: bool = False, render: bool = False, dt: float = 0.01,
+            task_list: list = None, reward_type: str = "sparse"
     ) -> None:
         """Constructor for environment.
 
@@ -172,18 +178,28 @@ class UrdfEnv(gym.Env):
         Parameters:
 
         robot: Robot instance to be simulated
+        flatten_observation: option to flatten observation_space
         render: Flag if simulator should render
         dt: Time step for pyhsics engine
+        task_list: a list of tasks to be randomly sampled
+        reward_type: either sparse or dense
         """
         self._dt: float = dt
         self._t: float = 0.0
         self._robot: GenericRobot = robot
         self._render: bool = render
         self._done: bool = False
+        self._infos: dict = {}
         self._num_sub_steps: float = 20
         self._obsts: list = []
         self._goals: list = []
         self._flatten_observation: bool = flatten_observation
+        self.reward_type = reward_type
+        self._maxTimesteps = 1_000
+        self.num_envs = 1  # needed for hindsight experience replay
+        if task_list is None:
+            task_list = ["sphere"]
+        self.task_list = task_list
 
         if self._render:
             cid = p.connect(p.SHARED_MEMORY)
@@ -212,6 +228,11 @@ class UrdfEnv(gym.Env):
         """Applies a given action to the robot."""
         pass
 
+    @abstractmethod
+    def get_ee_position(self) -> np.ndarray:
+        """Returns the robot-specific end-effector position in world frame"""
+        pass
+
     def step(self, action):
         self._t += self.dt()
         # Feed action to the robot and get observation of robot's state
@@ -222,16 +243,43 @@ class UrdfEnv(gym.Env):
             goal.updateBulletPosition(p, t=self.t())
         p.stepSimulation()
         ob = self._get_ob()
-
-        reward = 1.0
+        self._done = self._terminal()
+        self._infos = {}
+        if self._goalEnv:
+            reward = float(self.compute_reward(ob['achieved_goal'], ob['desired_goal'], self._infos))
+            self._infos['is_success'] = self.task._compute_success(ob['achieved_goal'], ob['desired_goal'],
+                                                                   self._done, self._goals)
+        else:
+            reward = 0.0
 
         if self._render:
             self.render()
-        return ob, reward, self._done, {}
+        return ob, reward, self._done, self._infos
+
+    def compute_reward(self, achieved_goal, desired_goal, info=None):
+        """Task-specific reward function"""
+        reward = self.task.compute_reward(achieved_goal, desired_goal, self._goals)
+        return reward
+
+    def _terminal(self):
+        if bool(self._t >= self._maxTimesteps * self._dt):
+            return True
+        return False
 
     def _get_ob(self) -> dict:
         """Compose the observation."""
         observation = self._robot.get_observation()
+        ''' from here on task-specific '''
+
+        if self._goalEnv:
+            ee_position = self.get_ee_position()
+            goalEnvObs = collections.OrderedDict()
+            # goalEnvObs['achieved_goal'] = np.array(p.getLinkState(bodyUniqueId=0, linkIndex=7,
+            # computeForwardKinematics=7)[0]) # pybullet alternativ
+            goalEnvObs['observation'] = np.array(flatten_observation(observation), dtype=np.float32)
+            goalEnvObs['achieved_goal'] = np.array(ee_position, dtype=np.float32)
+            goalEnvObs['desired_goal'] = np.array(self._goals[0].position(), dtype=np.float32)
+            return goalEnvObs
         if not self.observation_space.contains(observation):
             err = WrongObservationError(
                 "The observation does not fit the defined observation space",
@@ -450,7 +498,23 @@ class UrdfEnv(gym.Env):
         self.plane = Plane()
         p.setGravity(0, 0, -10.0)
         p.stepSimulation()
-        return self._robot.get_observation()
+        self.resetGoals()
+        self._sampleTask()
+        goal = self.task.sampleGoal()
+        self.add_goal(goal)
+        return self._get_ob()
+        # return self._robot.get_observation()
+
+    def _sampleTask(self):
+        """Randomize task."""
+        task = sample(self.task_list, 1)
+        if "sphere" in task:
+            self.task = ReachSphereTask(reward_type=self.reward_type)
+        if "albert" in task:
+            self.task = AlbertReachSphereTask(reward_type=self.reward_type)
+
+    def resetGoals(self):
+        self._goals = []
 
     def render(self) -> None:
         """Rendering the simulation environment.

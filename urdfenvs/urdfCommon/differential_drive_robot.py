@@ -87,8 +87,8 @@ class DifferentialDriveRobot(GenericRobot):
         self._limit_vel_forward_j = np.array([[-4., -10.], [4., 10.]])
         self._limit_pos_j[0, 0:3] = np.array([-10., -10., -2 * np.pi])
         self._limit_pos_j[1, 0:3] = np.array([10., 10., 2 * np.pi])
-        self._limit_vel_j[0, 0:3] = np.array([-4., -4., -10.])
-        self._limit_vel_j[1, 0:3] = np.array([4., 4., 10.])
+        self._limit_vel_j[0, 0:3] = np.array([-0.5, -1., -10.]) # changed to lim [-1, 1] to make exploration easier
+        self._limit_vel_j[1, 0:3] = np.array([0.5, 1., 10.])
         self.set_acceleration_limits()
 
     def get_observation_space(self) -> gym.spaces.Dict:
