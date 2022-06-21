@@ -31,14 +31,4 @@ class AlbertReacherEnv(UrdfEnv):
         joint_states = self._robot.get_observation()['joint_state']['position']
         ee_position = self._fk.fk(joint_states, "panda_link9", positionOnly=True)
         return ee_position
-
-    def convert_observation_space_to_goalEnv(self, observation_shape: tuple, goal_shape: tuple):
-        # todo: limits are hardcoded
-        import gym
-        self.observation_space = gym.spaces.Dict(
-            dict(
-                observation=gym.spaces.Box(-10.0, 10.0, shape=observation_shape, dtype=np.float32),
-                desired_goal=gym.spaces.Box(-10.0, 10.0, shape=goal_shape, dtype=np.float32),
-                achieved_goal=gym.spaces.Box(-10.0, 10.0, shape=goal_shape, dtype=np.float32),
-            )
-        )
+    
