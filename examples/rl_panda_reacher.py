@@ -19,11 +19,10 @@ def main():
     eval_env = Monitor(eval_env)
 
     eval_callback = EvalCallback(env, eval_freq=2_500, n_eval_episodes=5,
+                                 #best_model_save_path='models/debug/training/',
                                  deterministic=True, render=False)
 
     check_for_correct_spaces(env, env.observation_space, env.action_space)
-    #her_buffer = HerReplayBuffer(env=env, max_episode_length=5_000,
-    #                             goal_selection_strategy="future", buffer_size=1_000_000)
     model = SAC('MultiInputPolicy', env, verbose=1,
                 replay_buffer_class=HerReplayBuffer,
                 replay_buffer_kwargs=dict(
@@ -33,19 +32,22 @@ def main():
                     max_episode_length=1_000,
                 ),
                 tensorboard_log="logs/debug")
-    #model.learn(total_timesteps=200_000, log_interval=4, tb_log_name="SACHER_sparse",
+    #model.learn(total_timesteps=7_000, log_interval=4, #tb_log_name="SACHER_sparse",
     #            callback=eval_callback)
     #model.save('models/debug/SACHER_sparse')
     env.close()
+
     print("Starting evaluation")
     del env
-    eval_env = gym.make("panda-reacher-vel-v0", dt=0.01, render=True, gripper=gripper)
+    eval_env = gym.make("panda-reacher-vel-v0", dt=0.01, render=False, gripper=gripper)
     eval_env = Monitor(eval_env)
     gain = 1.1
     n_episodes = 10
-    n_steps = 5_000
+    n_steps = 1_000
 
     model = SAC.load('models/debug/SACHER_sparse.zip', env=eval_env)
+    import time
+    durations = []
     for e in range(n_episodes):
         ob = eval_env.reset()
         for i in range(n_steps):
@@ -56,7 +58,11 @@ def main():
             #action[2] = gain * 0.1
             #action[3] = gain * -0.08
             #action[5] = 0.0
-            action, _states = model.predict(ob, deterministic=True)#[0]
+            start = time.time()
+            action, _states = model.predict(ob, deterministic=True)
+            end = time.time()
+            duration = end-start
+            durations.append(duration)
             #print(action)
             ob, rew, done, infos = eval_env.step(action)
             if i % 100 == 1:
@@ -65,7 +71,9 @@ def main():
                 print(i, rew, done, infos)
                 break
                 #print(i, ob['achieved_goal'], ob['desired_goal'], rew)
-
+    durations = np.array(durations)
+    import pandas as pd
+    pd.DataFrame(durations).to_csv('NN_durations.csv')
 
 if __name__ == "__main__":
     main()
