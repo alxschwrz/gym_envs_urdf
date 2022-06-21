@@ -31,4 +31,3 @@ class AlbertReacherEnv(UrdfEnv):
         joint_states = self._robot.get_observation()['joint_state']['position']
         ee_position = self._fk.fk(joint_states, "panda_link9", positionOnly=True)
         return ee_position
-    
