@@ -38,3 +38,8 @@ class AlbertReachSphereTask(object):
             dist = np.linalg.norm(achieved_goal - desired_goal, axis=-1)
             return bool(dist < goals[0].epsilon())
         return False
+
+    def get_achieved_goal(self, robot, fk):
+        joint_states = robot.get_observation()['joint_state']['position']
+        achieved_goal = fk.fk(joint_states, -1, positionOnly=True)
+        return achieved_goal
