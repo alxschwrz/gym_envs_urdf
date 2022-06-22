@@ -12,6 +12,7 @@ from urdfenvs.sensors.sensor import Sensor
 from urdfenvs.urdfCommon.generic_robot import GenericRobot
 
 from urdfenvs.tasks.reach_sphere import ReachSphereTask
+from urdfenvs.tasks.point import PointTask
 from urdfenvs.tasks.reach_sphere_albert import AlbertReachSphereTask
 
 
@@ -198,7 +199,7 @@ class UrdfEnv(gym.Env):
         self._maxTimesteps = 1_000
         self.num_envs = 1  # needed for hindsight experience replay
         if task_list is None:
-            task_list = ["sphere"]
+            task_list = ["point"]
         self.task_list = task_list
 
         if self._render:
@@ -272,12 +273,12 @@ class UrdfEnv(gym.Env):
         ''' from here on task-specific '''
 
         if self._goalEnv:
-            ee_position = self.get_ee_position()
+            achieved_goal = self.task.get_achieved_goal(self._robot, self._fk)
             goalEnvObs = collections.OrderedDict()
             # goalEnvObs['achieved_goal'] = np.array(p.getLinkState(bodyUniqueId=0, linkIndex=7,
             # computeForwardKinematics=7)[0]) # pybullet alternativ
             goalEnvObs['observation'] = np.array(flatten_observation(observation), dtype=np.float32)
-            goalEnvObs['achieved_goal'] = np.array(ee_position, dtype=np.float32)
+            goalEnvObs['achieved_goal'] = np.array(achieved_goal, dtype=np.float32)
             goalEnvObs['desired_goal'] = np.array(self._goals[0].position(), dtype=np.float32)
             return goalEnvObs
         if not self.observation_space.contains(observation):
@@ -510,6 +511,8 @@ class UrdfEnv(gym.Env):
         task = sample(self.task_list, 1)
         if "sphere" in task:
             self.task = ReachSphereTask(reward_type=self.reward_type)
+        if "point" in task:
+            self.task = PointTask(reward_type=self.reward_type)
         if "albert" in task:
             self.task = AlbertReachSphereTask(reward_type=self.reward_type)
 
