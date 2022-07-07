@@ -219,6 +219,9 @@ class UrdfEnv(gym.Env):
     def t(self) -> float:
         return self._t
 
+    def goals(self) -> list:
+        return self._goals
+
     @abstractmethod
     def set_spaces(self) -> None:
         """Set observation and action space."""
