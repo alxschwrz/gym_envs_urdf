@@ -199,7 +199,7 @@ class UrdfEnv(gym.Env):
         self._maxTimesteps = 1_000
         self.num_envs = 1  # needed for hindsight experience replay
         if task_list is None:
-            task_list = ["point"]
+            task_list = ["sphere"]
         self.task_list = task_list
 
         if self._render:
