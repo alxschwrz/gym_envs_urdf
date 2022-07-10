@@ -11,6 +11,8 @@ class AlbertReacherEnv(UrdfEnv):
     def __init__(self, **kwargs):
         super().__init__(robot=AlbertRobot(), task_list=["albert"], **kwargs)
         self._goalEnv = True
+        self.goal_limits_ee = {"pos": {"x": [0.0, 1.0], "y": [-1.0, 1.0], "z": [0.7, 1.5]},
+                               "ori": {"x": [0.0, 0.5], "y": [-0.5, 0.5], "z": [0.0, 0.5]}}
         self._fk = AlbertFk()
         self.set_spaces()
         if self._goalEnv:

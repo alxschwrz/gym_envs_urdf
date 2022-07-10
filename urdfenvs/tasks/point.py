@@ -20,9 +20,13 @@ class PointTask(object):
         else:
             return -dist
 
-    def sampleGoal(self):
-        sampled_direction = np.random.uniform(-1.0, 1.0, 3)
-        normalized_goal_direction = sampled_direction / np.sqrt(np.sum(sampled_direction ** 2))
+    def sampleGoal(self, goal_limits):
+        goal_limits = goal_limits['ori']
+        desired_direction = np.array([np.random.uniform(goal_limits['x'][0], goal_limits['x'][1]),
+                                      np.random.uniform(goal_limits['y'][0], goal_limits['y'][1]),
+                                      np.random.uniform(goal_limits['z'][0], goal_limits['z'][1])])
+        # desired_direction = np.random.uniform(-1.0, 1.0, 3)
+        normalized_goal_direction = desired_direction / np.sqrt(np.sum(desired_direction ** 2))
         from MotionPlanningGoal.staticSubGoal import StaticSubGoal
         goalDict = {"m": 3, "w": 1.0, "prime": True, 'indices': [0, 1, 2], 'parent_link': 0, 'child_link': 3,
                     'desired_position': normalized_goal_direction, 'epsilon': 0.15, 'type': "staticSubGoal"}

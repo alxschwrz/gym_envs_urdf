@@ -266,7 +266,7 @@ class UrdfEnv(gym.Env):
         return reward
 
     def _terminal(self):
-        if bool(self._t >= self._maxTimesteps * self._dt):
+        if bool(self._t + self._dt >= self._maxTimesteps * self._dt):
             return True
         return False
 
@@ -504,7 +504,7 @@ class UrdfEnv(gym.Env):
         p.stepSimulation()
         self.resetGoals()
         self._sampleTask()
-        goal = self.task.sampleGoal()
+        goal = self.task.sampleGoal(self.goal_limits_ee)
         self.add_goal(goal)
         return self._get_ob()
         # return self._robot.get_observation()

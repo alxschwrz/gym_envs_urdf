@@ -20,12 +20,14 @@ class ReachSphereTask(object):
         else:
             return -dist
 
-    def sampleGoal(self):
+    def sampleGoal(self, goal_limits):
         from MotionPlanningGoal.staticSubGoal import StaticSubGoal
+        goal_limits = goal_limits['pos']
+        desired_position = [np.random.uniform(goal_limits['x'][0], goal_limits['x'][1]),
+                            np.random.uniform(goal_limits['y'][0], goal_limits['y'][1]),
+                            np.random.uniform(goal_limits['z'][0], goal_limits['z'][1])]
         goalDict = {"m": 3, "w": 1.0, "prime": True, 'indices': [0, 1, 2], 'parent_link': 0, 'child_link': 3,
-                     'desired_position': [np.random.uniform(0.0, 0.5),
-                                          np.random.uniform(-0.5, 0.5),
-                                          np.random.uniform(0.0, 0.5)], 'epsilon': 0.1, 'type': "staticSubGoal"}
+                     'desired_position': desired_position, 'epsilon': 0.1, 'type': "staticSubGoal"}
         goal = StaticSubGoal(name="goal", contentDict=goalDict)
         return goal
 

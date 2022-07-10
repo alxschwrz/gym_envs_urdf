@@ -9,6 +9,8 @@ class PandaReacherEnv(UrdfEnv):
         super().__init__(
             PandaRobot(gripper=gripper, friction=friction), **kwargs
         )
+        self.goal_limits_ee = {"pos": {"x": [0.0, 0.5], "y": [-0.5, 0.5], "z": [0.0, 0.5]},
+                               "ori": {"x": [-1.0, 1.0], "y": [-1.0, 1.0], "z": [-1.0, 1.0]}}
         self._fk = PandaFk()
         self.set_spaces()
         self._goalEnv = True  # OpenAI GoalEnv with dict observations: observation, achieved_goal, desired_goal
@@ -30,8 +32,10 @@ class PandaReacherEnv(UrdfEnv):
             vel = np.zeros(self._robot.n())
         return pos, vel
 
+
     def get_ee_position(self):
         joint_states = self._robot.get_observation()['joint_state']['position']
         ee_position = self._fk.fk(joint_states, 7, positionOnly=True)
         return ee_position
+
 
