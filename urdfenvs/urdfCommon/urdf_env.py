@@ -280,7 +280,10 @@ class UrdfEnv(gym.Env):
             goalEnvObs = collections.OrderedDict()
             # goalEnvObs['achieved_goal'] = np.array(p.getLinkState(bodyUniqueId=0, linkIndex=7,
             # computeForwardKinematics=7)[0]) # pybullet alternativ
-            goalEnvObs['observation'] = np.array(flatten_observation(observation), dtype=np.float32)
+            observation = flatten_observation(observation)
+            if len(self.task_list) > 1:
+                observation = np.append(observation, self.task.task_id())
+            goalEnvObs['observation'] = np.array(observation, dtype=np.float32)
             goalEnvObs['achieved_goal'] = np.array(achieved_goal, dtype=np.float32)
             goalEnvObs['desired_goal'] = np.array(self._goals[0].position(), dtype=np.float32)
             return goalEnvObs
