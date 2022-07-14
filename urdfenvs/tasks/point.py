@@ -4,7 +4,7 @@ import numpy as np
 
 class PointTask(object):
     def __init__(self, reward_type: str = "sparse"):
-        self._task_id = np.array([0])
+        self._task_id = np.array([2])
         self.reward_type = reward_type
 
     def task_id(self) -> np.ndarray:
