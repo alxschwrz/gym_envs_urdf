@@ -9,14 +9,14 @@ class PandaReacherEnv(UrdfEnv):
         super().__init__(
             PandaRobot(gripper=gripper, friction=friction), **kwargs
         )
-        self.goal_limits_ee = {"pos": {"x": [0.0, 0.5], "y": [-0.5, 0.5], "z": [0.0, 0.5]},
+        self.goal_limits_ee = {"pos": {"x": [0.1, 0.8], "y": [-0.4, 0.4], "z": [0.1, 0.8]},
                                "ori": {"x": [-1.0, 1.0], "y": [-1.0, 1.0], "z": [-1.0, 1.0]}}
         self._fk = PandaFk()
         self.set_spaces()
         self._goalEnv = True  # OpenAI GoalEnv with dict observations: observation, achieved_goal, desired_goal
         if self._goalEnv:
             ob = self.reset()
-            self.convert_observation_space_to_goalEnv(ob['observation'].shape, tuple((self._goals[0].m(),)))
+            self.convert_observation_space_to_goalEnv(ob['observation'].shape, ob['desired_goal'].shape)
 
 
     def check_initial_state(self, pos, vel):

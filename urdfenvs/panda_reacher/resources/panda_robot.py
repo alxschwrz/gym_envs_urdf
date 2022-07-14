@@ -15,7 +15,7 @@ class PandaRobot(HolonomicRobot):
             n = 9
         else:
             urdf_file = os.path.join(
-                os.path.dirname(__file__), "panda_working.urdf"
+                os.path.dirname(__file__), "panda_working_ALEX.urdf"
             )
             n = 7
         super().__init__(n, urdf_file)
