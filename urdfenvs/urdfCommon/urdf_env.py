@@ -13,6 +13,7 @@ from urdfenvs.urdfCommon.generic_robot import GenericRobot
 
 from urdfenvs.tasks.reach_sphere import ReachSphereTask
 from urdfenvs.tasks.point import PointTask
+from urdfenvs.tasks.full import FullTask
 from urdfenvs.tasks.reach_sphere_albert import AlbertReachSphereTask
 
 
@@ -277,6 +278,7 @@ class UrdfEnv(gym.Env):
 
         if self._goalEnv:
             achieved_goal = self.task.get_achieved_goal(self._robot, self._fk)
+            desired_goal = self.task.get_desired_goal(self._goals)
             goalEnvObs = collections.OrderedDict()
             # goalEnvObs['achieved_goal'] = np.array(p.getLinkState(bodyUniqueId=0, linkIndex=7,
             # computeForwardKinematics=7)[0]) # pybullet alternativ
@@ -285,7 +287,7 @@ class UrdfEnv(gym.Env):
                 observation = np.append(observation, self.task.task_id())
             goalEnvObs['observation'] = np.array(observation, dtype=np.float32)
             goalEnvObs['achieved_goal'] = np.array(achieved_goal, dtype=np.float32)
-            goalEnvObs['desired_goal'] = np.array(self._goals[0].position(), dtype=np.float32)
+            goalEnvObs['desired_goal'] = np.array(desired_goal, dtype=np.float32)
             return goalEnvObs
         if not self.observation_space.contains(observation):
             err = WrongObservationError(
@@ -519,6 +521,8 @@ class UrdfEnv(gym.Env):
             self.task = ReachSphereTask(reward_type=self.reward_type)
         if "point" in task:
             self.task = PointTask(reward_type=self.reward_type)
+        if "full" in task:
+            self.task = FullTask(reward_type=self.reward_type)
         if "albert" in task:
             self.task = AlbertReachSphereTask(reward_type=self.reward_type)
 
