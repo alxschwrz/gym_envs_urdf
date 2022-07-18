@@ -14,6 +14,7 @@ class ReachSphereTask(object):
         return goal
 
     def compute_reward(self, achieved_goal, desired_goal, goals):
+        #dist = np.linalg.norm(achieved_goal[:3] - desired_goal[:3], axis=-1)
         dist = np.linalg.norm(achieved_goal - desired_goal, axis=-1)
         if self.reward_type == "sparse":
             return -np.array(dist > goals[0].epsilon(), dtype=np.float32)
@@ -37,11 +38,18 @@ class ReachSphereTask(object):
         Task-specific success-function
         '''
         if done:
-            dist = np.linalg.norm(achieved_goal - desired_goal, axis=-1)
+            dist = np.linalg.norm(achieved_goal[:3] - desired_goal[:3], axis=-1)
             return bool(dist < goals[0].epsilon())
         return False
 
     def get_achieved_goal(self, robot, fk):
         joint_states = robot.get_observation()['joint_state']['position']
-        achieved_goal = fk.fk(joint_states, -1, positionOnly=True)
+        achieved_position = fk.fk(joint_states, -1, positionOnly=True)
+        achieved_goal = np.zeros(6)
+        achieved_goal[:3] = achieved_position
         return achieved_goal
+
+    def get_desired_goal(self, goals):
+        desired_goal = np.zeros(6)
+        desired_goal[:3] = goals[0].position()
+        return desired_goal

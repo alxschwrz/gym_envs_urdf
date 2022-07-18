@@ -14,6 +14,7 @@ class PointTask(object):
         return goal
 
     def compute_reward(self, achieved_goal, desired_goal, goals):
+        #dist2 = np.linalg.norm(achieved_goal[3:] - desired_goal[3:], axis=-1)
         dist = np.linalg.norm(achieved_goal - desired_goal, axis=-1)
         if self.reward_type == "sparse":
             return -np.array(dist > goals[0].epsilon(), dtype=np.float32)
@@ -39,7 +40,7 @@ class PointTask(object):
         Task-specific success-function
         '''
         if done:
-            dist = np.linalg.norm(achieved_goal - desired_goal, axis=-1)
+            dist = np.linalg.norm(achieved_goal[3:] - desired_goal[3:], axis=-1)
             return bool(dist < goals[0].epsilon())
         return False
 
@@ -54,7 +55,9 @@ class PointTask(object):
         # l4 = fk.fk(joint_states, 4, positionOnly=True)
         direction = ee - x0
         normalized_direction = direction / np.sqrt(np.sum(direction ** 2))
-        achieved_goal = normalized_direction
+        #achieved_goal = normalized_direction
+        achieved_goal = np.zeros(6)
+        achieved_goal[3:] = normalized_direction
 
         '''
         import pybullet as p
@@ -116,3 +119,9 @@ class PointTask(object):
                                lifeTime=duration)
        '''
         return achieved_goal
+
+
+    def get_desired_goal(self, goals):
+        desired_goal = np.zeros(6)
+        desired_goal[3:] = goals[0].position()
+        return desired_goal
