@@ -39,30 +39,32 @@ def main():
 
     print("Starting evaluation")
     del env
-    eval_env = gym.make("panda-reacher-vel-v0", dt=0.01, render=False, gripper=gripper)
+    eval_env = gym.make("panda-reacher-vel-v0", dt=0.01, render=True, gripper=gripper, task_list=['full'])
     eval_env = Monitor(eval_env)
     gain = 1.1
     n_episodes = 10
     n_steps = 1_000
 
-    model = SAC.load('models/debug/SACHER_sparse.zip', env=eval_env)
-    import time
-    durations = []
+    #model = SAC.load('models/debug/SACHER_sparse.zip', env=eval_env)
+    #import time
+    #durations = []
     for e in range(n_episodes):
         ob = eval_env.reset()
         for i in range(n_steps):
-            if i == 1000:
+            if i == 500:
                 gain = 0.1
-            #action = eval_env.action_space.sample()
-            #action[:] = 0
-            #action[2] = gain * 0.1
-            #action[3] = gain * -0.08
-            #action[5] = 0.0
-            start = time.time()
-            action, _states = model.predict(ob, deterministic=True)
-            end = time.time()
-            duration = end-start
-            durations.append(duration)
+            action = eval_env.action_space.sample()
+            action[:] = 0
+            action[2] = gain * 0.1
+            action[3] = gain * -0.08
+            action[5] = 0.0
+            #action[-2] = 1.0
+            #start = time.time()
+            #action, _states = model.predict(ob, deterministic=True)
+
+            #end = time.time()
+            #duration = end-start
+            #durations.append(duration)
             #print(action)
             ob, rew, done, infos = eval_env.step(action)
             if i % 100 == 1:
@@ -71,9 +73,9 @@ def main():
                 print(i, rew, done, infos)
                 break
                 #print(i, ob['achieved_goal'], ob['desired_goal'], rew)
-    durations = np.array(durations)
-    import pandas as pd
-    pd.DataFrame(durations).to_csv('NN_durations.csv')
+    #durations = np.array(durations)
+    #import pandas as pd
+    #pd.DataFrame(durations).to_csv('NN_durations.csv')
 
 if __name__ == "__main__":
     main()
