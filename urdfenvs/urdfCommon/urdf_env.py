@@ -201,6 +201,7 @@ class UrdfEnv(gym.Env):
         if task_list is None:
             task_list = ["sphere"]
         self.task_list = task_list
+        #self.np_random, seed = gym.utils.seeding.np_random(seed)
 
         if self._render:
             cid = p.connect(p.SHARED_MEMORY)
