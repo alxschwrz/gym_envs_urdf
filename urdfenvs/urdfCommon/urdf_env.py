@@ -259,7 +259,8 @@ class UrdfEnv(gym.Env):
 
         if self._render:
             self.render()
-        return ob, reward, self._done, self._infos
+        done = False
+        return ob, reward, done, self._infos
 
     def compute_reward(self, achieved_goal, desired_goal, info=None):
         """Task-specific reward function"""
