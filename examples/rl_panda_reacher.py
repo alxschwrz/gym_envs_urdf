@@ -39,7 +39,7 @@ def main():
 
     print("Starting evaluation")
     del env
-    eval_env = gym.make("panda-reacher-vel-v0", dt=0.01, render=True, gripper=gripper, task_list=['full'])
+    eval_env = gym.make("panda-reacher-vel-v0", dt=0.01, render=True, gripper=gripper, task_list=['point', 'point', ])
     eval_env = Monitor(eval_env)
     gain = 1.1
     n_episodes = 10
