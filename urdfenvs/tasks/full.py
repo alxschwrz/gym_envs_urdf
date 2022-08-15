@@ -2,6 +2,19 @@ from typing import Any, Dict, Union, List
 import numpy as np
 
 
+def compute_distance(vec1, vec2):
+    dist = np.sqrt(
+        (vec1[0] - vec2[0]) ** 2 +
+        (vec1[1] - vec2[1]) ** 2 +
+        (vec1[2] - vec2[2]) ** 2
+    )
+    return dist
+
+
+def normalize(x):
+    return ((x - 0.1) / (0.8 - 0.1) - 0.5) * 2
+
+
 class FullTask(object):
     def __init__(self, reward_type: str = "sparse"):
         self._task_id = np.array([0])
@@ -27,17 +40,32 @@ class FullTask(object):
                             np.random.uniform(goal_limits['pos']['y'][0], goal_limits['pos']['y'][1]),
                             np.random.uniform(goal_limits['pos']['z'][0], goal_limits['pos']['z'][1])
                             ]
+
         desired_direction = [np.random.uniform(goal_limits['ori']['x'][0], goal_limits['ori']['x'][1]),
                              np.random.uniform(goal_limits['ori']['y'][0], goal_limits['ori']['y'][1]),
                              np.random.uniform(goal_limits['ori']['z'][0], goal_limits['ori']['z'][1])
                              ]
 
-        #desired_position = [0.3, 0.3, 0.4]
-        #desired_direction = [np.random.uniform(0, 1.0), np.random.uniform(-1, 1), np.random.uniform(-1, 0)]
+        ##### complex goal mapping #####
+        # todo: check if this is any good
+        feasible_direction = [normalize(desired_position[0]), 0, normalize(desired_position[2])]
+        found_good_orientation = False
+        while not found_good_orientation:
+            desired_direction = [np.random.uniform(goal_limits['ori']['x'][0], goal_limits['ori']['x'][1]),
+                                 np.random.uniform(goal_limits['ori']['y'][0], goal_limits['ori']['y'][1]),
+                                 np.random.uniform(goal_limits['ori']['z'][0], goal_limits['ori']['z'][1])
+                                 ]
+            if compute_distance(feasible_direction, desired_direction) < 0.4:
+                found_good_orientation = True
+        ##### end complex goal mapping #####
+
+        # desired_position = [0.3, 0.3, 0.4]
+        # desired_direction = [np.random.uniform(0, 1.0), np.random.uniform(-1, 1), np.random.uniform(-1, 0)]
 
         # todo: the goal type will be a problem!
         goalDict = {"m": 3, "w": 1.0, "prime": True, 'indices': [0, 1, 2], 'parent_link': 0, 'child_link': 3,
-                    'desired_position': desired_position, 'angle': desired_direction, 'epsilon': 0.1, 'type': "staticSubGoal"}
+                    'desired_position': desired_position, 'angle': desired_direction, 'epsilon': 0.1,
+                    'type': "staticSubGoal"}
         goal = StaticSubGoal(name="goal", contentDict=goalDict)
         return goal
 
